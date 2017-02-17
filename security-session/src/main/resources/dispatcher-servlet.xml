@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+				http://www.springframework.org/schema/beans/spring-beans.xsd
+				http://www.springframework.org/schema/context 
+				http://www.springframework.org/schema/context/spring-context.xsd
+				http://www.springframework.org/schema/mvc
+				http://www.springframework.org/schema/mvc/spring-mvc.xsd
+				http://www.springframework.org/schema/aop
+				http://www.springframework.org/schema/aop/spring-aop.xsd"
+	   >
+				
+	<!-- 
+		这个仅仅是dispatcher Servlet所需要的对象，因此主要是controller
+	 -->
+	
+	<context:annotation-config />
+	<!-- Initialize first as defined first -->
+	<context:component-scan base-package="com.springcloud.session.security" ></context:component-scan>
+
+	<!-- web mvc -->
+	<mvc:annotation-driven/>
+	<!-- 使用默认的Servlet来响应静态文件。 -->
+	<mvc:default-servlet-handler/>
+	
+	<!-- JSP --> 
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/views/"/>
+		<property name="suffix" value=".html"/>
+	</bean>
+	
+	<mvc:resources mapping="/assert/**" location="/assert/" />
+	
+   <!-- 启动对@AspectJ注解的支持 -->  
+   <aop:aspectj-autoproxy proxy-target-class="true" />
+	
+	<!-- SpringMVC上传文件时，需要配置MultipartResolver处理器 -->  
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">  
+        <property name="defaultEncoding" value="UTF-8"/>  
+        <!-- 指定所上传文件的总大小不能超过10000KB。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和 -->  
+        <property name="maxUploadSize" value="10000000"/>  
+    </bean>  
+      
+    <!-- SpringMVC在超出上传文件限制时，会抛出org.springframework.web.multipart.MaxUploadSizeExceededException -->  
+    <!-- 该异常是SpringMVC在检查上传的文件信息时抛出来的，而且此时还没有进入到Controller方法中 -->  
+    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">  
+        <property name="exceptionMappings">  
+            <props>  
+                <!-- 遇到MaxUploadSizeExceededException异常时，自动跳转到/WEB-INF/jsp/error_fileupload.jsp页面? 需要check -->  
+                <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">upload-error.json</prop>  
+            </props>  
+        </property>  
+    </bean>  
+	
+</beans>

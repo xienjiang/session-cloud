@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:p="http://www.springframework.org/schema/p"
+	    xmlns:c="http://www.springframework.org/schema/c"
+	    xmlns:cache="http://www.springframework.org/schema/cache"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			 http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+<!-- 	<context:property-placeholder ignore-unresolvable="true" location="classpath:/redis.properties"/> -->
+
+	<bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+		p:hostName="${redis.pool.host}" p:port="${redis.pool.port}" p:password="${redis.pool.pwd}" p:usePool="true"/>
+
+	<context:component-scan base-package="com.springcloud.session"/>
+
+	<!-- Redis Template -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="jedisConnectionFactory" />
+		<property name="defaultSerializer">  
+          	<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>  
+		</property>
+	</bean>
+	
+	<!-- Redis Template -->
+	<bean id="redisNumberTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="jedisConnectionFactory" />
+		<property name="keySerializer">  
+          	<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>  
+		</property>
+		<property name="valueSerializer">
+		        <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"/>
+		</property>
+	</bean>
+	
+	<!-- turn on declarative caching -->
+  	<cache:annotation-driven />
+  	
+	<!-- declare Redis Cache Manager -->
+  	<bean id="cacheManager" class="org.springframework.data.redis.cache.RedisCacheManager" p:usePrefix="true" p:defaultExpiration="60000">
+  		 <constructor-arg index="0" ref="redisTemplate"></constructor-arg>
+  	</bean>
+
+
+</beans>
